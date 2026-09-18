@@ -1,0 +1,30 @@
+services:
+  reservation-db:
+    image: postgres:13-alpine
+    environment:
+      POSTGRES_DB: reservations
+      POSTGRES_USER: program
+      POSTGRES_PASSWORD: test
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - reservation-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U program -d reservations"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+  reservation:
+    build:
+      context: .
+      dockerfile: services/reservation/Dockerfile
+    volumes:
+      - ./services/reservation/config.docker.yaml:/app/config.yaml:ro
+      - ./services/reservation/migrations.yaml:/app/migrations.yaml:ro
+    ports:
+      - "127.0.0.1:8070:8070"
+    depends_on:
+      reservation-db:
+        condition: service_healthy
+volumes:
+  reservation-data:

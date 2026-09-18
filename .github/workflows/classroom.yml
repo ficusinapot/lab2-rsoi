@@ -1,0 +1,112 @@
+name: Reservation Service
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: |
+            modules/platform/go.sum
+            services/reservation/go.sum
+      - name: Install golangci-lint
+        run: GOTOOLCHAIN=local go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.13.2
+      - name: Check format
+        run: |
+          make -C modules/platform fmt-check
+          make -C services/reservation fmt-check
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: |
+            modules/platform/go.sum
+            services/reservation/go.sum
+      - name: Install golangci-lint
+        run: GOTOOLCHAIN=local go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.13.2
+      - name: Lint
+        run: |
+          make -C modules/platform lint
+          make -C services/reservation lint
+
+  modules:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: |
+            modules/platform/go.sum
+            services/reservation/go.sum
+      - name: Check modules
+        run: |
+          make -C modules/platform tidy
+          make -C services/reservation tidy
+
+  vulnerability:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: |
+            modules/platform/go.sum
+            services/reservation/go.sum
+      - name: Install govulncheck
+        run: GOTOOLCHAIN=local go install golang.org/x/vuln/cmd/govulncheck@latest
+      - name: Govulncheck
+        run: |
+          make -C modules/platform vuln GOVULNCHECK="$(go env GOPATH)/bin/govulncheck"
+          make -C services/reservation vuln GOVULNCHECK="$(go env GOPATH)/bin/govulncheck"
+
+  reservation:
+    runs-on: ubuntu-latest
+    needs: [format, lint, modules, vulnerability]
+    services:
+      postgres:
+        image: postgres:13-alpine
+        env:
+          POSTGRES_DB: reservations_atlas
+          POSTGRES_USER: program
+          POSTGRES_PASSWORD: test
+        ports:
+          - 55432:5432
+        options: >-
+          --health-cmd "pg_isready -U program -d reservations_atlas"
+          --health-interval 2s --health-timeout 3s --health-retries 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: |
+            modules/platform/go.sum
+            services/reservation/go.sum
+      - name: Install test and migration tools
+        run: |
+          GOTOOLCHAIN=local go install gotest.tools/gotestsum@latest
+          GOTOOLCHAIN=local go install github.com/mikefarah/yq/v4@v4.47.1
+          curl -sSf https://atlasgo.sh | sh
+      - name: Build
+        run: make -C services/reservation build
+      - name: Unit tests
+        run: |
+          make -C modules/platform unit-test
+          make -C services/reservation unit-test
+      - name: Integration tests
+        run: make -C services/reservation integration-test
+      - name: Build Docker image
+        run: make -C services/reservation docker-build
