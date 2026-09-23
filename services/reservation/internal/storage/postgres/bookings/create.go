@@ -5,7 +5,7 @@ import (
 
 	"github.com/samber/oops"
 
-	"github.com/autometrics-dev/autometrics-go/prometheus/autometrics"
+	"lab2/platform/observability/metrics"
 
 	"lab2/reservation/ent"
 	"lab2/reservation/ent/hotel"
@@ -15,7 +15,7 @@ import (
 )
 
 func (r *Repository) Create(ctx context.Context, booking bookings.Booking) (_ bookings.Reservation, err error) {
-	defer autometrics.Instrument(autometrics.PreInstrument(ctx), &err)
+	defer metrics.Instrument(metrics.PreInstrument(ctx, r.Create), &err)
 	h, err := r.client.Hotel.Query().Where(hotel.HotelUIDEQ(booking.HotelUID)).Only(ctx)
 	if ent.IsNotFound(err) {
 		return bookings.Reservation{}, oops.In("repository").Code("not_found").

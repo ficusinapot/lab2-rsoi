@@ -1,5 +1,5 @@
-FROM arigaio/atlas:latest-community-distroless AS atlas
-FROM mikefarah/yq:4 AS yq
+FROM arigaio/atlas@sha256:1cba0a901ca5db8bd402c68402607ed47f8eda894d6f865579f3ebaf3b015696 AS atlas
+FROM mikefarah/yq:4.47.1 AS yq
 
 FROM golang:1.27-alpine AS build
 WORKDIR /src

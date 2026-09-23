@@ -7,7 +7,8 @@ build:
 	go build ./...
 
 unit-test:
-	$(GOTESTSUM) -- -race -timeout 30s ./...
+	mkdir -p bin
+	$(GOTESTSUM) --junitfile bin/unit.xml $(TEST_REPORT_ARGS) -- -race -timeout 30s ./...
 
 test: unit-test
 

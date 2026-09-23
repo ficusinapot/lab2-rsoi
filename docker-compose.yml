@@ -9,6 +9,7 @@ services:
       - "127.0.0.1:5432:5432"
     volumes:
       - reservation-data:/var/lib/postgresql/data
+      - ./postgres:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U program -d reservations"]
       interval: 2s
@@ -23,8 +24,67 @@ services:
       - ./services/reservation/migrations.yaml:/app/migrations.yaml:ro
     ports:
       - "127.0.0.1:8070:8070"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8070/manage/health"]
+      interval: 2s
+      timeout: 3s
+      retries: 60
     depends_on:
       reservation-db:
+        condition: service_healthy
+  payment:
+    build:
+      context: .
+      dockerfile: services/payment/Dockerfile
+    volumes:
+      - ./services/payment/config.docker.yaml:/app/config.yaml:ro
+      - ./services/payment/migrations.yaml:/app/migrations.yaml:ro
+    ports:
+      - "127.0.0.1:8060:8060"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8060/manage/health"]
+      interval: 2s
+      timeout: 3s
+      retries: 60
+    depends_on:
+      reservation-db:
+        condition: service_healthy
+  loyalty:
+    build:
+      context: .
+      dockerfile: services/loyalty/Dockerfile
+    volumes:
+      - ./services/loyalty/config.docker.yaml:/app/config.yaml:ro
+      - ./services/loyalty/migrations.yaml:/app/migrations.yaml:ro
+    ports:
+      - "127.0.0.1:8050:8050"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8050/manage/health"]
+      interval: 2s
+      timeout: 3s
+      retries: 60
+    depends_on:
+      reservation-db:
+        condition: service_healthy
+  gateway:
+    build:
+      context: .
+      dockerfile: services/gateway/Dockerfile
+    volumes:
+      - ./services/gateway/config.docker.yaml:/app/config.yaml:ro
+    ports:
+      - "127.0.0.1:8080:8080"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/manage/health"]
+      interval: 2s
+      timeout: 3s
+      retries: 60
+    depends_on:
+      reservation:
+        condition: service_healthy
+      payment:
+        condition: service_healthy
+      loyalty:
         condition: service_healthy
 volumes:
   reservation-data:

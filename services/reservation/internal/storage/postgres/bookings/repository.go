@@ -6,7 +6,7 @@ import (
 
 	"github.com/samber/oops"
 
-	"github.com/autometrics-dev/autometrics-go/prometheus/autometrics"
+	"lab2/platform/observability/metrics"
 
 	"lab2/reservation/ent"
 	"lab2/reservation/ent/reservation"
@@ -19,7 +19,7 @@ type Repository struct{ client *ent.Client }
 func New(client *ent.Client) *Repository { return &Repository{client: client} }
 
 func (r *Repository) List(ctx context.Context, name string) (_ []bookings.Reservation, err error) {
-	defer autometrics.Instrument(autometrics.PreInstrument(ctx), &err)
+	defer metrics.Instrument(metrics.PreInstrument(ctx, r.List), &err)
 	rows, err := r.client.Reservation.Query().
 		Where(reservation.UsernameEQ(name)).
 		WithHotel().Order(ent.Asc(reservation.FieldID)).All(ctx)
@@ -38,7 +38,7 @@ func (r *Repository) List(ctx context.Context, name string) (_ []bookings.Reserv
 }
 
 func (r *Repository) Get(ctx context.Context, id uuid.UUID, name string) (_ bookings.Reservation, err error) {
-	defer autometrics.Instrument(autometrics.PreInstrument(ctx), &err)
+	defer metrics.Instrument(metrics.PreInstrument(ctx, r.Get), &err)
 	row, err := r.client.Reservation.Query().
 		Where(reservation.ReservationUIDEQ(id), reservation.UsernameEQ(name)).
 		WithHotel().Only(ctx)
@@ -57,7 +57,7 @@ func (r *Repository) Get(ctx context.Context, id uuid.UUID, name string) (_ book
 }
 
 func (r *Repository) Cancel(ctx context.Context, id uuid.UUID, name string) (err error) {
-	defer autometrics.Instrument(autometrics.PreInstrument(ctx), &err)
+	defer metrics.Instrument(metrics.PreInstrument(ctx, r.Cancel), &err)
 	count, err := r.client.Reservation.Update().
 		Where(reservation.ReservationUIDEQ(id), reservation.UsernameEQ(name)).
 		SetStatus(reservation.Status(bookings.StatusCanceled)).Save(ctx)

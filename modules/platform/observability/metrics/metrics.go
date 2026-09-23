@@ -12,6 +12,7 @@ import (
 	am "github.com/autometrics-dev/autometrics-go/pkg/autometrics"
 	"github.com/autometrics-dev/autometrics-go/prometheus/autometrics"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/samber/oops"
 )
@@ -68,7 +69,11 @@ func New(c Config) (*Metrics, error) {
 		Help:      "HTTP request duration in seconds.",
 		Buckets:   c.LatencyBuckets,
 	}, []string{"method", "route", "status"})
-	for _, collector := range []prometheus.Collector{m.requests, m.duration} {
+	for _, collector := range []prometheus.Collector{
+		m.requests, m.duration,
+		collectors.NewGoCollector(),
+		collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}),
+	} {
 		if err := m.registry.Register(collector); err != nil {
 			return nil, oops.Wrapf(err, "register metrics collector")
 		}

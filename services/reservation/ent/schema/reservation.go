@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 )
 
 type Reservation struct{ ent.Schema }
@@ -35,4 +36,8 @@ func (Reservation) Fields() []ent.Field {
 
 func (Reservation) Edges() []ent.Edge {
 	return []ent.Edge{edge.From("hotel", Hotel.Type).Ref("reservations").Field("hotel_id").Unique()}
+}
+
+func (Reservation) Indexes() []ent.Index {
+	return []ent.Index{index.Fields("username")}
 }

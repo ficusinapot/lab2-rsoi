@@ -178,3 +178,9 @@ loyalty:
     status: "GOLD"
     discount: 10
 ```
+
+## Реализация и запуск
+
+Запуск четырёх сервисов, внутренние HTTP-контракты и проверки описаны
+в [docs/services.md](docs/services.md). Детали Reservation —
+в [docs/reservation.md](docs/reservation.md).

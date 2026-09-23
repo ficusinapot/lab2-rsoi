@@ -31,14 +31,17 @@ migrations-check:
 	@set -eu; dir="$$( $(YQ) -er '.directory' "$(MIGRATION_CONFIG)" )"; $(ATLAS) migrate validate --dir "file://$$dir"
 
 unit-test:
-	GOWORK=off $(GOTESTSUM) -- -race -timeout 30s ./...
+	mkdir -p bin
+	GOWORK=off $(GOTESTSUM) --junitfile bin/unit.xml $(TEST_REPORT_ARGS) -- -race -timeout 30s ./...
 
 integration-test:
+	mkdir -p bin
 	$(MAKE) migrate CONFIG="$(TEST_CONFIG)"
-	TEST_CONFIG="$(abspath $(TEST_CONFIG))" GOWORK=off $(GOTESTSUM) -- -tags=integration -count=1 -race -timeout 2m ./tests/integration/...
+	TEST_CONFIG="$(abspath $(TEST_CONFIG))" GOWORK=off $(GOTESTSUM) --junitfile bin/integration.xml $(TEST_REPORT_ARGS) -- -tags=integration -count=1 -race -timeout 2m ./tests/integration/...
 
 e2e-test:
-	RESERVATION_PROJECT_ROOT="$(abspath ../..)" GOWORK=off $(GOTESTSUM) -- -tags=e2e -count=1 -timeout 10m ./tests/e2e/...
+	mkdir -p bin
+	RESERVATION_PROJECT_ROOT="$(abspath ../..)" GOWORK=off $(GOTESTSUM) --junitfile bin/e2e.xml $(TEST_REPORT_ARGS) -- -tags=e2e -count=1 -timeout 10m ./tests/e2e/...
 
 test: unit-test
 test-all: unit-test integration-test

@@ -86,3 +86,26 @@ func TestObserveHTTPRequest(t *testing.T) {
 		t.Fatal("request counter absent")
 	}
 }
+
+func TestRuntimeCollectors(t *testing.T) {
+	t.Parallel()
+	telemetry, err := New(Config{
+		Path: metricsPath, Service: serviceName, Version: serviceVersion, LatencyBuckets: []float64{0.01, 0.1},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	families, err := telemetry.registry.Gather()
+	if err != nil {
+		t.Fatal(err)
+	}
+	names := make(map[string]bool, len(families))
+	for _, family := range families {
+		names[family.GetName()] = true
+	}
+	for _, name := range []string{"go_goroutines", "process_cpu_seconds_total"} {
+		if !names[name] {
+			t.Fatalf("missing runtime collector %s", name)
+		}
+	}
+}

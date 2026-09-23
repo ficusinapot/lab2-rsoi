@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"uuid"
 
-	"github.com/autometrics-dev/autometrics-go/prometheus/autometrics"
+	"lab2/platform/observability/metrics"
 
 	"github.com/samber/oops"
 	"lab2/reservation/ent"
@@ -26,7 +26,7 @@ func model(h *ent.Hotel) hotels.Hotel {
 }
 
 func (r *Repository) Get(ctx context.Context, id uuid.UUID) (_ hotels.Hotel, err error) {
-	defer autometrics.Instrument(autometrics.PreInstrument(ctx), &err)
+	defer metrics.Instrument(metrics.PreInstrument(ctx, r.Get), &err)
 	h, err := r.client.Hotel.Query().Where(hotel.HotelUIDEQ(id)).Only(ctx)
 	if ent.IsNotFound(err) {
 		return hotels.Hotel{}, oops.In("repository").Code("not_found").
@@ -43,7 +43,7 @@ func (r *Repository) Get(ctx context.Context, id uuid.UUID) (_ hotels.Hotel, err
 }
 
 func (r *Repository) List(ctx context.Context, page, size int) (_ hotels.Page, err error) {
-	defer autometrics.Instrument(autometrics.PreInstrument(ctx), &err)
+	defer metrics.Instrument(metrics.PreInstrument(ctx, r.List), &err)
 	tx, err := r.client.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelRepeatableRead, ReadOnly: true})
 	if err != nil {
 		return hotels.Page{}, oops.FromContext(ctx).In("hotels.postgres").
