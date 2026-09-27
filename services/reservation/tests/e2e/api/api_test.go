@@ -8,7 +8,7 @@ import (
 	"testing"
 	"uuid"
 
-	bookinghttp "lab2/reservation/internal/transport/http/bookings"
+	bookinghttp "lab2/reservation/internal/rest/bookings"
 	"lab2/reservation/tests/e2e/fixtures"
 	"lab2/reservation/tests/e2e/infrastructure"
 	"lab2/reservation/tests/e2e/support"

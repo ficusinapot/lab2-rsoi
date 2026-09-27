@@ -10,7 +10,7 @@ ATLAS ?= atlas
 YQ ?= $(if $(wildcard $(HOME)/go/bin/yq),$(HOME)/go/bin/yq,yq)
 
 generate:
-	GOWORK=off go generate -v ./ent ./internal/usecase/...
+	GOWORK=off go generate -v ./ent ./internal/models/dbifc/...
 
 build:
 	go build -o bin/reservation -v ./cmd/reservation

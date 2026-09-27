@@ -178,14 +178,10 @@ jobs:
       - name: Verify generated clients and mocks
         run: scripts/check-generated.sh
 
-  classroom:
-    name: Autograding
+  acceptance:
+    name: Acceptance tests
     runs-on: ubuntu-latest
     needs: [reservation, new-services, generated]
-    permissions:
-      contents: read
-      actions: read
-      checks: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -210,7 +206,8 @@ jobs:
         run: scripts/wait-script.sh
       - name: Prepare test data
         run: scripts/prepare-classroom.sh
-      - uses: education/autograding@v1
+      - name: Postman acceptance tests
+        run: newman run -e v2/postman/environment.json v2/postman/collection.json
       - name: Diagnostics
         if: always()
         run: docker compose logs --no-color > compose.log

@@ -10,7 +10,7 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/spf13/cobra"
 	"lab2/platform/config"
-	"lab2/reservation/internal/app"
+	serviceconfig "lab2/reservation/internal/config"
 )
 
 func main() {
@@ -20,8 +20,8 @@ func main() {
 func run() int {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
-	command := config.NewCommand("reservation", func(cmd *cobra.Command, cfg app.Config) error {
-		return app.Run(cmd.Context(), cfg)
+	command := config.NewCommand("reservation", func(cmd *cobra.Command, cfg serviceconfig.Config) error {
+		return Run(cmd.Context(), cfg)
 	})
 	if err := command.ExecuteContext(ctx); err != nil {
 		fmt.Fprintln(os.Stderr, err)

@@ -9,7 +9,6 @@ import (
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/spf13/cobra"
-	"lab2/loyalty/internal/app"
 	"lab2/platform/config"
 )
 
@@ -20,8 +19,8 @@ func main() {
 func run() int {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
-	command := config.NewCommand("loyalty", func(cmd *cobra.Command, cfg app.Config) error {
-		return app.Run(cmd.Context(), cfg)
+	command := config.NewCommand("loyalty", func(cmd *cobra.Command, cfg Config) error {
+		return Run(cmd.Context(), cfg)
 	})
 	if err := command.ExecuteContext(ctx); err != nil {
 		fmt.Fprintln(os.Stderr, err)

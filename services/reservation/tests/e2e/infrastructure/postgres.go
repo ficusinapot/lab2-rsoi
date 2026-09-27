@@ -27,7 +27,8 @@ func newPostgres(
 		}),
 		testcontainers.WithExposedPorts(postgresPort),
 		testcontainers.WithWaitStrategy(
-			wait.ForLog("database system is ready to accept connections").WithStartupTimeout(2*time.Minute),
+			wait.ForLog("database system is ready to accept connections").WithOccurrence(2).
+				WithStartupTimeout(2*time.Minute),
 		),
 	)
 	if err != nil {

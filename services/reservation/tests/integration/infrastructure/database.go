@@ -11,29 +11,29 @@ import (
 	"testing"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
-	"lab2/platform/config"
+	platformconfig "lab2/platform/config"
 	"lab2/platform/database"
 	"lab2/platform/observability/metrics"
 	"lab2/reservation/ent"
-	"lab2/reservation/internal/app"
-	"lab2/reservation/internal/storage/postgres"
-	bookingstorage "lab2/reservation/internal/storage/postgres/bookings"
-	hotelstorage "lab2/reservation/internal/storage/postgres/hotels"
-	httptransport "lab2/reservation/internal/transport/http"
-	bookingusecase "lab2/reservation/internal/usecase/bookings"
-	hotelusecase "lab2/reservation/internal/usecase/hotels"
+	"lab2/reservation/internal/config"
+	bookingusecase "lab2/reservation/internal/core/usecases/bookings"
+	hotelusecase "lab2/reservation/internal/core/usecases/hotels"
+	"lab2/reservation/internal/postgres"
+	bookingstorage "lab2/reservation/internal/postgres/repos/bookings"
+	hotelstorage "lab2/reservation/internal/postgres/repos/hotels"
+	httptransport "lab2/reservation/internal/rest"
 )
 
 type Database struct {
 	SQL    *sql.DB
 	Client *ent.Client
-	Config app.Config
+	Config config.Config
 }
 
 func NewDatabase(t *testing.T) *Database {
 	t.Helper()
 	path := testingConfig(t)
-	cfg, err := config.Load[app.Config](path)
+	cfg, err := platformconfig.Load[config.Config](path)
 	if err != nil {
 		t.Fatal(err)
 	}

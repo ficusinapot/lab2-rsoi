@@ -12,8 +12,8 @@ import (
 
 	"lab2/reservation/ent/hotel"
 	"lab2/reservation/ent/reservation"
-	bookingdomain "lab2/reservation/internal/domain/bookings"
-	bookinghttp "lab2/reservation/internal/transport/http/bookings"
+	bookingdomain "lab2/reservation/internal/models/entities"
+	bookinghttp "lab2/reservation/internal/rest/bookings"
 	"lab2/reservation/tests/integration/fixtures"
 	"lab2/reservation/tests/integration/infrastructure"
 	"lab2/reservation/tests/integration/support"

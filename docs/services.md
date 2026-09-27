@@ -125,8 +125,8 @@ newman run -e v2/postman/environment.json v2/postman/collection.json
 Подготовка явно загружает отель и пользователя `Test Max` с `GOLD/25/10`,
 не перезаписывая существующие записи. Fixtures не входят в миграции.
 Postman-коллекцию и environment можно импортировать в Postman вручную.
-Workflow Classroom выполняет сборки, проверки, unit/e2e-тесты, запускает Compose
-и autograding v2. Удалённый результат появляется после push на GitHub.
+Workflow выполняет сборки, проверки, unit/e2e-тесты, запускает Compose
+и Postman-коллекцию v2 через Newman. Удалённый результат появляется после push на GitHub.
 
 ## Refactoring and concurrency limits
 
@@ -202,7 +202,7 @@ responses. A local run on linux/amd64 with Intel Core Ultra 5 125H measured:
 
 This synthetic comparison isolates enrichment scheduling; it is not a production
 latency guarantee. There is no timing threshold in CI. Run the benchmark through
-`gotestsum -- -run '^$' -bench BenchmarkList -benchtime=100ms ./internal/usecase/bookings`
+`gotestsum -- -run '^$' -bench BenchmarkList -benchtime=100ms ./internal/core/usecases/bookings`
 from the Gateway module. Gotestsum v1.12.3 may list benchmark events as incomplete
 cases with Go 1.27; the benchmark output and underlying Go process exit status
 remain the source of the measurements.

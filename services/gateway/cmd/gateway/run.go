@@ -1,0 +1,45 @@
+package main
+
+import (
+	"context"
+	"net/http"
+
+	"github.com/samber/oops"
+	"lab2/gateway/internal/core/usecases/bookings"
+	"lab2/gateway/internal/httpclient"
+	loyaltyrepo "lab2/gateway/internal/loyalty/repos"
+	paymentrepo "lab2/gateway/internal/payment/repos"
+	reservationrepo "lab2/gateway/internal/reservation/repos"
+	transport "lab2/gateway/internal/rest/bookings"
+	"lab2/platform/logging"
+	"lab2/platform/observability/metrics"
+	"lab2/platform/rest"
+)
+
+func Run(ctx context.Context, cfg Config) error {
+	logger, closeLogs, err := logging.New(cfg.Logging)
+	if err != nil {
+		return oops.Wrapf(err, "initialize logging")
+	}
+	defer closeLogs()
+	telemetry, err := metrics.New(cfg.Metrics)
+	if err != nil {
+		return oops.Wrap(err)
+	}
+	stop, err := telemetry.StartAutometrics(cfg.Metrics)
+	if err != nil {
+		return oops.Wrap(err)
+	}
+	defer stop(nil)
+	router, api := rest.New(cfg.HTTP, cfg.OpenAPI, rest.Observability(logger, telemetry))
+	client := httpclient.New(cfg.Clients)
+	defer client.CloseIdleConnections()
+	reservations := reservationrepo.New(client, cfg.Clients.ReservationURL)
+	payments := paymentrepo.New(client, cfg.Clients.PaymentURL)
+	loyalty := loyaltyrepo.New(client, cfg.Clients.LoyaltyURL)
+	transport.Register(api, bookings.New(reservations, payments, loyalty, cfg.EnrichmentConcurrency), logger, cfg.HTTP)
+	router.Handle(cfg.Metrics.Path, telemetry.Handler())
+	router.Get("/manage/health", func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(http.StatusOK) })
+	logger.Info("gateway listening", "address", cfg.HTTP.Address)
+	return oops.Wrapf(rest.Serve(ctx, cfg.HTTP, router), "run gateway")
+}

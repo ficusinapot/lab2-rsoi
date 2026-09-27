@@ -10,7 +10,7 @@ import (
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"lab2/reservation/ent"
-	"lab2/reservation/internal/storage/postgres"
+	"lab2/reservation/internal/postgres"
 )
 
 const TestHotelUID = "049161bb-badd-4fa8-9d90-87c9a82b0668"

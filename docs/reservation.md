@@ -30,19 +30,19 @@ Cobra принимает `--config`, Viper отклоняет неизвестн
 ## Структура
 
 `services/reservation` и `modules/platform` являются отдельными Go-модулями.
-Внутри слоев сервиса сущности разделены по папкам `hotels` и `bookings`:
+Внутри слоёв сервиса сценарии и адаптеры разделены по `hotels` и `bookings`:
 
-- `internal/domain`: модели и ошибки предметной области.
-- `internal/usecase`: бизнес-правила и интерфейсы хранилищ.
-- `internal/storage/postgres`: репозитории Ent.
-- `internal/transport/http`: типизированные Huma-обработчики на Chi.
-- `internal/app`: сборка зависимостей через Dig.
+- `internal/models/entities`: модели и ошибки без HTTP и Ent-тегов.
+- `internal/models/coreifc` и `internal/models/dbifc`: контракты сценариев и БД.
+- `internal/core/usecases`: бизнес-правила.
+- `internal/postgres/repos` и `internal/postgres/converters`: Ent-адаптеры и преобразования.
+- `internal/rest`: типизированные Huma DTO и обработчики на Chi.
+- `cmd/reservation`: ручная сборка зависимостей; `internal/config` хранит импортируемый YAML-контракт.
 - `ent/schema`: схемы; клиент Ent сгенерирован и хранится в репозитории.
 - `migrations`: standalone Atlas SQL и `atlas.sum`.
 
-Общий модуль содержит YAML CLI, PostgreSQL, REST, логирование, ошибки oops
-и метрики. DI-контейнер существует только в composition root; компоненты
-получают зависимости через конструкторы.
+Общий модуль содержит YAML CLI, PostgreSQL, REST, логирование и метрики.
+Компоненты получают зависимости через конструкторы без DI-контейнера.
 
 ## Миграции
 

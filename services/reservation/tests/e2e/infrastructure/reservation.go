@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/docker/docker/api/types/build"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/network"
 	"github.com/testcontainers/testcontainers-go/wait"
@@ -27,6 +28,9 @@ func newReservation(
 			Dockerfile:     filepath.Join("services", "reservation", "Dockerfile"),
 			KeepImage:      true,
 			BuildLogWriter: io.Discard,
+			BuildOptionsModifier: func(opts *build.ImageBuildOptions) {
+				opts.Version = build.BuilderBuildKit
+			},
 		}),
 		network.WithNetwork([]string{"reservation"}, net),
 		testcontainers.WithExposedPorts(appPort),

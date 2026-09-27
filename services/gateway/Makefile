@@ -1,4 +1,4 @@
-.PHONY: build run unit-test e2e-test test test-all lint lint-fix style-check fmt fmt-check tidy vuln docker-build check
+.PHONY: build run unit-test integration-test e2e-test test test-all lint lint-fix style-check fmt fmt-check tidy vuln docker-build check
 
 CONFIG ?= config.yaml
 GOLANGCI_LINT ?= $(if $(wildcard $(HOME)/go/bin/golangci-lint),$(HOME)/go/bin/golangci-lint,golangci-lint)
@@ -15,12 +15,16 @@ unit-test:
 	mkdir -p bin
 	GOWORK=off $(GOTESTSUM) --junitfile bin/unit.xml $(TEST_REPORT_ARGS) -- -race -timeout 30s ./...
 
+integration-test:
+	mkdir -p bin
+	GOWORK=off $(GOTESTSUM) --junitfile bin/integration.xml $(TEST_REPORT_ARGS) -- -tags=integration -race -timeout 30s ./tests/integration/...
+
 e2e-test:
 	mkdir -p bin
 	GATEWAY_PROJECT_ROOT="$(abspath ../..)" GOWORK=off $(GOTESTSUM) --junitfile bin/e2e.xml $(TEST_REPORT_ARGS) -- -tags=e2e -count=1 -timeout 10m ./tests/e2e/...
 
 test: unit-test
-test-all: unit-test e2e-test
+test-all: unit-test integration-test e2e-test
 
 lint:
 	$(GOLANGCI_LINT) run -c .golangci.yml ./...

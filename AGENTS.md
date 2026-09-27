@@ -25,8 +25,8 @@
 - Упакуй каждый сервис в Docker; настрой сборку и запуск контейнеров
   в `docker-compose.yml` через `build`.
 - Храни код на GitHub. В `.github/workflows/classroom.yml` добавь
-  сборку и unit-тесты. В нем и `.github/classroom/autograding.json`
-  замени `<variant>` на `v2`.
+  сборку и unit-тесты. Приемочную Postman-коллекцию `v2` запускай через Newman
+  напрямую, без GitHub Classroom autograder.
 
 ## Окружение и проверка
 
@@ -36,7 +36,7 @@
   инициализация использует соответствующий `schema-$VARIANT`.
 - Для локальных интеграционных проверок импортируй в Postman
   `v2/postman/collection.json` и `v2/postman/environment.json` из шаблона.
-- Успешное прохождение автоматических тестов отображается в GitHub Classroom.
+- Успешное прохождение автоматических тестов отображается в GitHub Actions.
 - Пути выше относятся к шаблону: перед использованием проверь наличие
   соответствующих файлов в текущем репозитории.
 
@@ -48,11 +48,13 @@
 REST-сервер (Huma на Chi), подключение к PostgreSQL, логирование
 и `observability/metrics`.
 
-Соблюдай слои `internal/domain`, `internal/usecase`, `internal/storage/postgres`,
-`internal/transport/http`; внутри каждого выделяй папки сущностей `hotels` и
-`bookings`, чтобы добавление сущностей не раздувало существующие пакеты.
-Зависимости передавай через конструкторы;
-DI-контейнер Dig используй только в `internal/app`.
+Соблюдай границы пакетов `internal/models/entities`, `internal/models/coreifc`,
+`internal/models/dbifc`, `internal/core/usecases`, `internal/postgres/repos`,
+`internal/postgres/converters` и `internal/rest`. Для Reservation разделяй
+сценарии, репозитории и обработчики по `hotels` и `bookings`. Сущности не
+содержат HTTP DTO и структур Ent; интерфейсы используют сущности и стандартную
+библиотеку. Зависимости передавай через конструкторы и собирай вручную в
+`cmd/<service>`, без DI-контейнера.
 Работай с БД через Ent. Схемы Ent находятся в `ent/schema`,
 сгенерированный клиент хранится в репозитории и обновляется через
 `go generate ./services/reservation/ent`.
