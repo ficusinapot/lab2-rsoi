@@ -16,6 +16,7 @@ services:
       timeout: 3s
       retries: 30
   reservation:
+    image: lab2-reservation
     build:
       context: .
       dockerfile: services/reservation/Dockerfile
@@ -33,6 +34,7 @@ services:
       reservation-db:
         condition: service_healthy
   payment:
+    image: lab2-payment
     build:
       context: .
       dockerfile: services/payment/Dockerfile
@@ -50,6 +52,7 @@ services:
       reservation-db:
         condition: service_healthy
   loyalty:
+    image: lab2-loyalty
     build:
       context: .
       dockerfile: services/loyalty/Dockerfile
@@ -67,6 +70,7 @@ services:
       reservation-db:
         condition: service_healthy
   gateway:
+    image: lab2-gateway
     build:
       context: .
       dockerfile: services/gateway/Dockerfile
