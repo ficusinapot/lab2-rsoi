@@ -197,7 +197,7 @@ jobs:
       - name: Build Docker images
         run: docker compose build
       - name: Gateway end-to-end tests
-        run: make -C services/gateway e2e-test
+        run: GATEWAY_E2E_PREBUILT=1 make -C services/gateway e2e-test
       - name: Validate Compose
         run: docker compose config --quiet
       - name: Start services

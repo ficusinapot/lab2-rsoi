@@ -86,12 +86,16 @@ func newStack(t *testing.T) *stack {
 	for _, svc := range []struct{ name, port string }{
 		{"reservation", "8070/tcp"}, {"payment", "8060/tcp"}, {loyaltyServiceName, "8050/tcp"}, {"gateway", "8080/tcp"},
 	} {
+		image := testcontainers.ContainerCustomizer(testcontainers.WithDockerfile(testcontainers.FromDockerfile{
+			Context:    root,
+			Dockerfile: filepath.Join("services", svc.name, "Dockerfile"), KeepImage: true, BuildLogWriter: io.Discard,
+			BuildOptionsModifier: func(opts *build.ImageBuildOptions) { opts.Version = build.BuilderBuildKit },
+		}))
+		if os.Getenv("GATEWAY_E2E_PREBUILT") == "1" {
+			image = testcontainers.WithImage("lab2-" + svc.name)
+		}
 		container, err := testcontainers.Run(ctx, "",
-			testcontainers.WithDockerfile(testcontainers.FromDockerfile{
-				Context:    root,
-				Dockerfile: filepath.Join("services", svc.name, "Dockerfile"), KeepImage: true, BuildLogWriter: io.Discard,
-				BuildOptionsModifier: func(opts *build.ImageBuildOptions) { opts.Version = build.BuilderBuildKit },
-			}),
+			image,
 			network.WithNetwork([]string{svc.name}, nw), testcontainers.WithExposedPorts(svc.port),
 			testcontainers.WithWaitStrategy(wait.ForHTTP("/manage/health").WithPort(nat.Port(svc.port)).
 				WithStartupTimeout(3*time.Minute)))
